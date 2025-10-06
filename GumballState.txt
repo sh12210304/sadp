@@ -1,0 +1,95 @@
+// State interface
+interface State {
+    void insertQuarter();
+    void ejectQuarter();
+    void turnCrank();
+    void dispense();
+}
+
+// ---- Concrete States ----
+class NoQuarterState implements State {
+    GumballMachine m;
+    NoQuarterState(GumballMachine m){ this.m = m; }
+    public void insertQuarter(){ System.out.println("\nYou inserted a quarter."); m.setState(m.hasQuarter); }
+    public void ejectQuarter(){ System.out.println("No quarter to eject."); }
+    public void turnCrank(){ System.out.println("You turned, but there’s no quarter."); }
+    public void dispense(){ System.out.println("Insert a quarter first."); }
+    public String toString(){ return "NoQuarterState"; }
+}
+
+class HasQuarterState implements State {
+    GumballMachine m;
+    HasQuarterState(GumballMachine m){ this.m = m; }
+    public void insertQuarter(){ System.out.println("Quarter already inserted."); }
+    public void ejectQuarter(){ System.out.println("Quarter returned."); m.setState(m.noQuarter); }
+    public void turnCrank(){ System.out.println("You turned the crank..."); m.setState(m.sold); m.dispense(); }
+    public void dispense(){ System.out.println("Turn the crank first."); }
+    public String toString(){ return "HasQuarterState"; }
+}
+
+class SoldState implements State {
+    GumballMachine m;
+    SoldState(GumballMachine m){ this.m = m; }
+    public void insertQuarter(){ System.out.println("Please wait, dispensing..."); }
+    public void ejectQuarter(){ System.out.println("Already turned the crank."); }
+    public void turnCrank(){ System.out.println("Turning twice won’t get another gumball!"); }
+    public void dispense(){
+        System.out.println("A gumball comes rolling out...");
+        m.count--;
+        if(m.count > 0) m.setState(m.noQuarter);
+        else { 
+            System.out.println("Out of gumballs!");
+            m.setState(m.soldOut);
+        }
+    }
+    public String toString(){ return "SoldState"; }
+}
+
+class SoldOutState implements State {
+    GumballMachine m;
+    SoldOutState(GumballMachine m){ this.m = m; }
+    public void insertQuarter(){ System.out.println("\nMachine is sold out. Can't insert a quarter."); }
+    public void ejectQuarter(){ System.out.println("No quarter inserted."); }
+    public void turnCrank(){ System.out.println("Machine is empty."); }
+    public void dispense(){ System.out.println("No gumballs to dispense."); }
+    public String toString(){ return "SoldOutState"; }
+}
+
+// ---- Context ----
+class GumballMachine {
+    State soldOut, noQuarter, hasQuarter, sold, state;
+    int count;
+    GumballMachine(int c){
+        count = c;
+        soldOut = new SoldOutState(this);
+        noQuarter = new NoQuarterState(this);
+        hasQuarter = new HasQuarterState(this);
+        sold = new SoldState(this);
+        state = (count > 0) ? noQuarter : soldOut;
+    }
+    void setState(State s){ state = s; }
+    void insertQuarter(){ state.insertQuarter(); }
+    void ejectQuarter(){ state.ejectQuarter(); }
+    void turnCrank(){ state.turnCrank(); }
+    void dispense(){ state.dispense(); }
+    void display(){
+        System.out.println("\nCurrent gumball count: " + count);
+        System.out.println("Current state: " + state);
+    }
+}
+
+// ---- Client ----
+public class GumballMachineDemo {
+    public static void main(String[] args) {
+        GumballMachine g = new GumballMachine(3);
+
+        g.insertQuarter(); g.ejectQuarter();
+        g.insertQuarter(); g.turnCrank(); g.display();
+
+        g.insertQuarter(); g.turnCrank(); g.display();
+
+        g.insertQuarter(); g.turnCrank(); g.display();
+
+        g.insertQuarter(); // after sold out
+    }
+}
