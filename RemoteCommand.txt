@@ -1,0 +1,88 @@
+// Command Interface
+interface Command {
+    void execute();
+    void undo();
+}
+
+// Receiver 1: Light
+class Light {
+    private String location;
+    public Light(String location) { this.location = location; }
+    public void on() { System.out.println(location + " light is ON"); }
+    public void off() { System.out.println(location + " light is OFF"); }
+}
+
+// Receiver 2: TV
+class TV {
+    private String location;
+    public TV(String location) { this.location = location; }
+    public void on() { System.out.println(location + " TV is ON"); }
+    public void off() { System.out.println(location + " TV is OFF"); }
+}
+
+// Concrete Commands
+class LightOnCommand implements Command {
+    private Light light;
+    public LightOnCommand(Light light) { this.light = light; }
+    public void execute() { light.on(); }
+    public void undo() { light.off(); }
+}
+
+class LightOffCommand implements Command {
+    private Light light;
+    public LightOffCommand(Light light) { this.light = light; }
+    public void execute() { light.off(); }
+    public void undo() { light.on(); }
+}
+
+class TVOnCommand implements Command {
+    private TV tv;
+    public TVOnCommand(TV tv) { this.tv = tv; }
+    public void execute() { tv.on(); }
+    public void undo() { tv.off(); }
+}
+
+class TVOffCommand implements Command {
+    private TV tv;
+    public TVOffCommand(TV tv) { this.tv = tv; }
+    public void execute() { tv.off(); }
+    public void undo() { tv.on(); }
+}
+
+// Invoker: Remote Control
+class RemoteControl {
+    private Command lastCommand;
+    public void press(Command command) {
+        System.out.println("---- Press " + command.getClass().getSimpleName().replace("Command","") + " ----");
+        command.execute();
+        lastCommand = command;
+    }
+    public void pressUndo() {
+        if (lastCommand != null) {
+            System.out.println("? Undoing last command...");
+            lastCommand.undo();
+        }
+    }
+}
+
+// Test Program
+public class CommandPatternTest {
+    public static void main(String[] args) {
+        RemoteControl remote = new RemoteControl();
+
+        Light livingRoomLight = new Light("Living Room");
+        TV bedroomTV = new TV("Bedroom");
+
+        // Test Light
+        remote.press(new LightOnCommand(livingRoomLight));
+        remote.press(new LightOffCommand(livingRoomLight));
+        remote.pressUndo();
+
+        System.out.println();
+
+        // Test TV
+        remote.press(new TVOnCommand(bedroomTV));
+        remote.press(new TVOffCommand(bedroomTV));
+        remote.pressUndo();
+    }
+}
