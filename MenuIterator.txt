@@ -1,0 +1,70 @@
+import java.util.*;
+
+// Menu Item class
+class MenuItem {
+    String name;
+    double price;
+    MenuItem(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+}
+
+// Iterator interface
+interface IteratorPattern {
+    boolean hasNext();
+    MenuItem next();
+}
+
+// Concrete Iterator
+class MenuIterator implements IteratorPattern {
+    private List<MenuItem> items;
+    private int position = 0;
+    MenuIterator(List<MenuItem> items) { this.items = items; }
+    public boolean hasNext() { return position < items.size(); }
+    public MenuItem next() { return items.get(position++); }
+}
+
+// Aggregate class
+class Menu {
+    private List<MenuItem> items = new ArrayList<>();
+    void addItem(String name, double price) {
+        items.add(new MenuItem(name, price));
+    }
+    IteratorPattern createIterator() {
+        return new MenuIterator(items);
+    }
+}
+
+// Client
+public class MenuIteratorDemo {
+    public static void main(String[] args) {
+        Menu breakfast = new Menu();
+        breakfast.addItem("Pancakes", 80);
+        breakfast.addItem("Coffee", 40);
+
+        Menu lunch = new Menu();
+        lunch.addItem("Veg Thali", 120);
+        lunch.addItem("Curd Rice", 90);
+
+        Menu dinner = new Menu();
+        dinner.addItem("Pizza", 200);
+        dinner.addItem("Pasta", 180);
+
+        System.out.println("🍳 Breakfast Menu:");
+        printMenu(breakfast.createIterator());
+
+        System.out.println("\n🍱 Lunch Menu:");
+        printMenu(lunch.createIterator());
+
+        System.out.println("\n🍔 Dinner Menu:");
+        printMenu(dinner.createIterator());
+    }
+
+    static void printMenu(IteratorPattern iterator) {
+        while (iterator.hasNext()) {
+            MenuItem item = iterator.next();
+            System.out.println(item.name + " - Rs." + item.price);
+        }
+    }
+}
